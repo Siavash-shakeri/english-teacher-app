@@ -1,0 +1,46 @@
+# نام اپ
+name: english_teacher
+description: "معلم انگلیسی من — اپ آموزش زبان انگلیسی برای فارسی‌زبانان"
+# نسخه: 1.0.0 (کد بیلد 1)
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.4.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  provider: ^6.1.2
+  sqflite: ^2.3.3
+  path: ^1.9.0
+  path_provider: ^2.1.4
+  cryptography: ^2.7.0
+  google_fonts: ^6.2.1
+  shared_preferences: ^2.2.3
+  intl: ^0.20.3
+  uuid: ^4.4.0
+  image_picker: ^1.0.7
+  google_mlkit_text_recognition: ^0.15.1
+  google_mlkit_translation: ^0.13.0
+  image: ^4.1.3
+  crop_your_image: ^2.0.0
+  http: ^1.6.0
+  flutter_secure_storage: ^11.2.0
+  firebase_core: ^5.0.0
+  firebase_auth: ^7.0.0
+  cloud_firestore: ^7.0.0
+  firebase_storage: ^14.0.0
+  connectivity_plus: ^7.3.2
+  printing: ^5.15.1
+  pdf: ^3.13.1
+  share_plus: ^13.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

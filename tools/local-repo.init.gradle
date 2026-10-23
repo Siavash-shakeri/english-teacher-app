@@ -1,0 +1,23 @@
+// Init script: use local file-based Maven repo (populated by tools/resolve-agp.py via curl)
+// for plugin and dependency resolution, working around Java TLS blocking to dl.google.com.
+def localRepo = "file:///home/hatch/workspace/english-teacher-app/m2repo"
+
+// For plugin resolution (settings.gradle pluginManagement)
+// NOTE: Do NOT add to dependencyResolutionManagement - settings.gradle uses PREFER_PROJECT mode
+gradle.settingsEvaluated { settings ->
+    settings.pluginManagement.repositories {
+        maven { url = uri(localRepo) }
+    }
+}
+
+// For buildscript and project dependencies
+gradle.projectsLoaded {
+    gradle.rootProject.allprojects { prj ->
+        prj.buildscript.repositories {
+            maven { url = uri(localRepo) }
+        }
+        prj.repositories {
+            maven { url = uri(localRepo) }
+        }
+    }
+}
