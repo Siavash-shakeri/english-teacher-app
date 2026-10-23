@@ -1,0 +1,74 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - 'android/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Release-signing secrets (see "امضای انتشار" below). The android/app/build.gradle
+      # reads these environment variables to sign the release build with a persistent
+      # keystore, so updates install over older installs. Leave unset and the build
+      # uses the debug key instead (fine for testing, NOT for public releases).
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+        # NOTE: version is intentionally NOT pinned — the action installs the
+        # latest stable, so the build never breaks on a mistyped version number.
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: flutter analyze
+        run: flutter analyze
+        # Deliberately NOT continue-on-error: static-analysis failures fail the build
+        # so problems surface immediately instead of shipping silently.
+
+      - name: Build release APK (split per ABI, shrunk)
+        run: flutter build apk --release --split-per-abi --shrink
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: english-teacher-apk
+          path: build/app/outputs/flutter-apk/app-*-release.apk
+          retention-days: 14
+
+# ─── امضای انتشار (Release signing) ───────────────────────────────────────────
+# To sign releases with a stable keystore (so future APKs install OVER the old
+# ones instead of failing with INSTALL_FAILED_UPDATE_INCOMPATIBLE), create these
+# 4 repository secrets (Settings → Secrets and variables → Actions) and push a
+# keystore once with keytool:
+#
+#   keytool -genkey -v -keystore english-teacher-release.keystore \
+#     -alias english_teacher -keyalg RSA -keysize 2048 -validity 10000
+#   base64 -w 0 english-teacher-release.keystore   # paste output into the secret
+#
+#   ANDROID_KEYSTORE_BASE64  – base64 of the .keystore file
+#   ANDROID_KEYSTORE_PASSWORD – keystore password
+#   ANDROID_KEY_ALIAS        – key alias (english_teacher)
+#   ANDROID_KEY_PASSWORD     – key password
+#
+# See docs/build-apk-fa.md (بخش «ج») for the full Persian step-by-step guide.
