@@ -1,0 +1,67 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+import java.nio.file.Files
+import java.util.Base64
+
+android {
+    namespace 'com.englishteacher.app'
+    compileSdk 36
+    ndkVersion "28.2.13676358"
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    defaultConfig {
+        applicationId 'com.englishteacher.app'
+        minSdk 24
+        targetSdk 34
+        versionCode 2004
+        versionName '1.0.0'
+    }
+
+    // signingConfig انتشار: کلید از متغیرهای محیطی CI می‌آید.
+    // در بیلد محلی (بدون متغیر) از کلید دیباگ استفاده می‌شود.
+    signingConfigs {
+        release {
+            def base64 = System.getenv('ANDROID_KEYSTORE_BASE64')
+            def storePass = System.getenv('ANDROID_KEYSTORE_PASSWORD')
+            def aliasName = System.getenv('ANDROID_KEY_ALIAS')
+            def keyPass = System.getenv('ANDROID_KEY_PASSWORD')
+            if (base64 && storePass && aliasName && keyPass) {
+                def ksFile = new File(rootDir, 'release.keystore')
+                ksFile.bytes = Base64.decoder.decode(base64)
+                storeFile ksFile
+                storePassword storePass
+                keyAlias aliasName
+                keyPassword keyPass
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                    'proguard-rules.pro'
+            signingConfig signingConfigs.release.storeFile != null
+                    ? signingConfigs.release
+                    : signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source '../..'
+}

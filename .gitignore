@@ -1,0 +1,25 @@
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+# Android
+android/.gradle/
+android/captures/
+android/gradle.properties
+android/local.properties
+*.keystore
+*.jks
+# iOS
+ios/.symlinks/
+ios/Pods/
+# Misc
+.DS_Store
+*.log
+m2repo/
+*.apk
+*.zip
+*.idsig
