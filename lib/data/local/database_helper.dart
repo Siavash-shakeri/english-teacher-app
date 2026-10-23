@@ -76,9 +76,20 @@ class DatabaseHelper {
 
   /// دیتابیس بازشده؛ اولین فراخوانی آن را می‌سازد و باز می‌کند،
   /// فراخوانی‌های بعدی همان نمونه را برمی‌گردانند.
+  ///
+  /// ضدگیر: بازشدن دیتابیس سقف زمانی دارد؛ اگر بار اول هنگ کرد یا
+  /// خطا داد، یک بار دیگر از نو تلاش می‌شود تا اپ روی لودینگ نماند.
   Future<Database> get database {
-    _dbFuture ??= _initDatabase();
+    _dbFuture ??= _openWithRetry();
     return _dbFuture!;
+  }
+
+  Future<Database> _openWithRetry() async {
+    try {
+      return await _initDatabase().timeout(const Duration(seconds: 15));
+    } catch (_) {
+      return await _initDatabase().timeout(const Duration(seconds: 15));
+    }
   }
 
   /// بستن اتصال و پاک کردن حافظه تا فراخوانی بعدی دوباره باز شود.
