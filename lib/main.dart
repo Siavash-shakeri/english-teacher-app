@@ -21,8 +21,15 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // کش حضور کلید Gemini برای موتورهای آنلاین (isAvailable همگام)
   AiGate.refreshKeyPresence();
-  // مقداردهی Firebase؛ اگر google-services.json نباشد، اپ آفلاین می‌ماند
-  await FirebaseService.instance.initialize();
+  // مقداردهی Firebase؛ اگر google-services.json نباشد، اپ آفلاین می‌ماند.
+  // سقف زمانی بیرونی هم هست تا تحت هیچ شرایطی شروع اپ گیر نکند.
+  try {
+    await FirebaseService.instance
+        .initialize()
+        .timeout(const Duration(seconds: 8));
+  } catch (_) {
+    // آفلاین ادامه بده
+  }
   runApp(const EnglishTeacherApp());
 }
 

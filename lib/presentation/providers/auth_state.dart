@@ -37,20 +37,35 @@ class AuthState extends ChangeNotifier {
   }
 
   /// اشتراک روی جریان حساب فعال + بارگذاری اولیهٔ فهرست
+  ///
+  /// ضدگیر: هر خطا یا هنگ در خواندن دیتابیس/تنظیمات نباید اپ را روی
+  /// صفحهٔ لودینگ نگه دارد؛ در هر حالت [isLoading] خاموش می‌شود تا
+  /// کاربر دست‌کم به صفحهٔ ورود برسد.
   Future<void> init() async {
-    _sub = _repo.currentAccountStream().listen((account) {
-      currentAccount = account;
+    try {
+      _sub = _repo.currentAccountStream().listen((account) {
+        currentAccount = account;
+        notifyListeners();
+      });
+      await refreshAccounts().timeout(const Duration(seconds: 10));
+      currentAccount ??=
+          await _repo.currentAccount().timeout(const Duration(seconds: 10));
+    } catch (_) {
+      // دیتابیس/تنظیمات در دسترس نیست — ورود به‌صورت مهمانِ واردنشده
+      accounts = [];
+    } finally {
+      isLoading = false;
       notifyListeners();
-    });
-    await refreshAccounts();
-    currentAccount ??= await _repo.currentAccount();
-    isLoading = false;
-    notifyListeners();
+    }
   }
 
   /// تازه‌سازی فهرست حساب‌ها از مخزن
   Future<void> refreshAccounts() async {
-    accounts = await _repo.listAccounts();
+    try {
+      accounts = await _repo.listAccounts();
+    } catch (_) {
+      accounts = [];
+    }
     notifyListeners();
   }
 
